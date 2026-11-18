@@ -897,22 +897,32 @@ function stringDistractors(ans, n) {
  * @returns {{question, kind, choices, correct_index, final_answer, answer_key, solution, method, choice_explanations, gen}}
  */
 export function generateOffline(topic, difficulty, kind, { thinking = false, avoid = new Set(), wid = null } = {}) {
-  const d = Math.max(1, Math.min(5, difficulty));
+  const d = Math.max(1, Math.min(6, difficulty)); // 6 = nâng cao (chỉ có ở ngân hàng mẫu)
+  const gd = Math.min(5, d);
   const fn = GENERATORS[topic.gen] || GENERATORS.add_sub;
   let g;
   for (let i = 0; i < 5; i++) {
-    try { g = fn(topic.p || {}, d); if (g && g.q && g.ans !== undefined && !Number.isNaN(g.ans)) break; } catch { g = null; }
+    try { g = fn(topic.p || {}, gd); if (g && g.q && g.ans !== undefined && !Number.isNaN(g.ans)) break; } catch { g = null; }
   }
-  if (!g) g = GENERATORS.add_sub({ max: 100 }, d);
+  if (!g) g = GENERATORS.add_sub({ max: 100 }, gd);
   // Tự luận: ưu tiên bài có lời văn nhiều bước từ ngân hàng mẫu (theo dạng bài SGK/SBT)
-  if (kind === 'essay' && d >= 3) {
-    const grade = Number(String(topic.id || '').split('-')[0]) || 0;
-    const w = !grade ? null : wid ? makeWordProblem(wid, grade, d) : pickWordProblem(topic, grade, d, thinking, avoid);
+  const grade = Number(String(topic.id || '').split('-')[0]) || 0;
+  if (grade && wid) {
+    const w = makeWordProblem(wid, grade, d);
+    if (w) g = w;
+  } else if (grade && kind === 'essay' && d >= 3) {
+    const w = pickWordProblem(topic, grade, d, thinking, avoid, 'essay');
+    if (w) g = w;
+  } else if (grade && kind === 'mcq' && Math.random() < 0.75) {
+    // trắc nghiệm: ưu tiên các dạng bài phong phú của ngân hàng mẫu (nếu có mẫu dùng được cho trắc nghiệm)
+    const w = pickWordProblem(topic, grade, d, thinking, avoid, 'mcq');
     if (w) g = w;
   }
   const tex = g.tex || toTex(g.ans);
   // đáp án nhiễu dùng cùng "khuôn" với đáp án đúng (giữ đơn vị, "x = ...", ...)
-  const shape = typeof g.ans === 'number' && tex.includes(vn(g.ans))
+  const hm = (x) => { const m = String(x).match(/^(\d+):(\d+)$/); return m ? `${+m[1]}\\text{ giờ }${+m[2]}\\text{ phút}` : toTex(x); };
+  const shape = /^\d+:\d\d$/.test(String(g.ans)) && /giờ/.test(tex) ? hm
+    : typeof g.ans === 'number' && tex.includes(vn(g.ans))
     ? (v) => (typeof v === 'number' ? tex.replace(vn(g.ans), vn(v)) : toTex(v))
     : typeof g.ans === 'string' && g.tex && g.tex.includes(g.ans)
       ? (v) => g.tex.replace(g.ans, String(v))

@@ -15,10 +15,16 @@
 | Nhận xét và biểu đồ | Biểu đồ điểm theo ngày (kèm đường trung bình 7 ngày), tỉ lệ đúng theo chủ đề và theo mức độ, chuỗi ngày học liên tục, nhận xét sau mỗi bài và nhận xét tổng quát. |
 | Báo cáo cho phụ huynh | Gửi tự động mỗi ngày theo giờ cài đặt, qua **email** (SMTP) và/hoặc **Zalo OA**. Cũng có nút xem trước và nút gửi ngay. |
 
+### Chuyên sâu lớp 5 và bậc thang tư duy
+
+- **68 dạng bài riêng cho lớp 5** (`src/grade5.js`), chia theo đúng 11 chủ đề SGK. Mỗi chủ đề có bậc thang mức độ: **1 Nhận biết → 2 Thông hiểu → 3 Vận dụng → 4 Vận dụng nhiều bước → 5 Vận dụng cao → 6 Nâng cao** (dạng bồi dưỡng học sinh giỏi). Ví dụ các dạng nâng cao: so sánh phân số bằng phần bù, tính nhanh dãy phân số, cùng thêm vào tử và mẫu, quên hoặc dời dấu phẩy, làm tròn ngược, chuyển kho, tuổi sau n năm, tỉ lệ bản đồ với diện tích, kéo dài đáy tam giác hoặc hình thang, hình vuông nội tiếp hình tròn, phơi khô hạt tươi, pha loãng nước muối, tăng rồi giảm phần trăm, thả đá vào bể, sơn khối lập phương rồi cắt nhỏ, tàu qua cầu, vận tốc trung bình đi – về, chạy quanh hồ, làm chung công việc, đánh số trang sách, đếm hình.
+- Các dạng này dùng cho cả **trắc nghiệm** (có phương án nhiễu là sai lầm thường gặp) và **tự luận**.
+- **Bậc thang tư duy tự điều chỉnh** (4 bậc: Khởi động, Cơ bản, Khá, Giỏi). Ứng dụng xét 40 câu gần nhất, trong đó câu đúng ở mức khó được tính nhiều điểm hơn. Làm tốt thì đề có nhiều câu mức 5–6 hơn; gặp khó thì đề hạ xuống để củng cố. Mỗi ngày chỉ lên hoặc xuống tối đa 1 bậc. Bậc hiện tại hiển thị trên trang của học sinh.
+
 ### Hai chế độ
 
 - **Có AI (Claude)**: đặt `ANTHROPIC_API_KEY`. AI soạn đề đa dạng, có câu tư duy theo tình huống thực tế. AI đọc **ảnh chụp bài làm** để chấm cả cách làm lẫn kết quả, chỉ ra bước sai, rồi ra 3 bài tương tự và viết nhận xét.
-- **Offline** (không có khóa, hoặc khi AI lỗi): đề lấy từ bộ sinh bài có sẵn, phủ mọi chủ đề lớp 1–12 (`src/generators.js`). Câu **tự luận** lấy từ ngân hàng **84 mẫu bài có lời văn nhiều bước** (`src/wordproblems.js`), soạn theo các dạng điển hình trong SGK, sách bài tập, vở bài tập và đề kiểm tra: rút về đơn vị, tổng – hiệu, tổng – tỉ, giả thiết tạm, tính ngược, tỉ số phần trăm, chuyển động, lập phương trình hoặc hệ phương trình, bài toán thực tế THPT… Số liệu được sinh ngẫu nhiên nên đề không lặp. Lời giải trình bày theo kiểu "Bài giải … Đáp số". Bài tự luận được chấm theo **đáp số cuối** em nhập; ảnh vẫn được lưu để phụ huynh xem. Đề offline lặp dạng nhiều hơn đề do AI soạn.
+- **Offline** (không có khóa, hoặc khi AI lỗi): đề lấy từ bộ sinh bài có sẵn, phủ mọi chủ đề lớp 1–12 (`src/generators.js`). Câu **tự luận** lấy từ ngân hàng **152 mẫu bài có lời văn nhiều bước** (`src/wordproblems.js`), soạn theo các dạng điển hình trong SGK, sách bài tập, vở bài tập và đề kiểm tra: rút về đơn vị, tổng – hiệu, tổng – tỉ, giả thiết tạm, tính ngược, tỉ số phần trăm, chuyển động, lập phương trình hoặc hệ phương trình, bài toán thực tế THPT… Số liệu được sinh ngẫu nhiên nên đề không lặp. Lời giải trình bày theo kiểu "Bài giải … Đáp số". Bài tự luận được chấm theo **đáp số cuối** em nhập; ảnh vẫn được lưu để phụ huynh xem. Đề offline lặp dạng nhiều hơn đề do AI soạn.
 
 ## Cài trên máy của con (miễn phí, không cần máy chủ)
 
@@ -77,7 +83,8 @@ npm test
 src/
   curriculum.js  Phân phối chương trình lớp 1–12 (SGK Kết nối tri thức) và cách tính tuần học
   generators.js  Bộ sinh bài offline (~70 dạng) kèm lời giải, phương pháp và phương án nhiễu
-  wordproblems.js Ngân hàng mẫu bài tự luận có lời văn (84 mẫu, lớp 1–12)
+  wordproblems.js Ngân hàng mẫu bài có lời văn (tổng 152 mẫu, lớp 1–12)
+  grade5.js      Bộ chuyên sâu lớp 5: 68 dạng, mức 1–6
   answer.js      So khớp đáp số (dấu phẩy/chấm, phân số, thứ tự nghiệm…)
   ai.js          Gọi Claude: ra đề, chấm ảnh tự luận, bài tương tự, nhận xét
   tutor.js       Lập đề hằng ngày, chấm bài, vòng luyện lại, thống kê tiến bộ

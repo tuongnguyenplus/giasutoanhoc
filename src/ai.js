@@ -29,6 +29,7 @@ Khi soạn câu TỰ LUẬN, bám theo các dạng bài điển hình trong SGK,
 - Tiểu học (lớp 1–5): rút về đơn vị; bài toán giải bằng hai, ba bước tính; tìm thành phần chưa biết; một phần mấy của một số; trung bình cộng; tổng – hiệu; tổng – tỉ; hiệu – tỉ (bài toán tuổi); tỉ số phần trăm (tìm p% của một số, tìm một số khi biết p% của nó, lãi – vốn, phần còn lại); chuyển động đều (gặp nhau, đuổi kịp, xuôi – ngược dòng, có thời gian nghỉ); chu vi, diện tích, thể tích gắn với thực tế (rào vườn, lát nền, bể nước); tiền Việt Nam, xem giờ. Bài tư duy: giả thiết tạm (gà – chó), tính ngược từ cuối, trồng cây, tính nhanh. Trình bày lời giải mẫu đúng kiểu vở: "Bài giải", mỗi bước một câu lời giải rồi phép tính kèm đơn vị trong ngoặc, cuối cùng "Đáp số: …".
 - THCS (lớp 6–9): bài toán thực tế về số nguyên, phân số, phần trăm (tiết kiệm, giảm giá); ƯCLN/BCNN (chia đều, xếp hàng thừa/thiếu); đại lượng tỉ lệ thuận, tỉ lệ nghịch, chia theo tỉ lệ; giải bài toán bằng cách lập phương trình / hệ phương trình (chuyển động, năng suất, làm chung – làm riêng, vòi nước, số học, hình học, phần trăm); phương trình bậc hai từ bài toán diện tích; Viète; rút gọn biểu thức chứa căn rồi tính giá trị; Pythagore, Thalès, hệ thức lượng trong tình huống đo đạc thực tế; xác suất của biến cố. Lời giải phải có: gọi ẩn (đơn vị, điều kiện) → lập phương trình → giải → đối chiếu điều kiện → kết luận.
 - THPT (lớp 10–12): bài toán tối ưu (hệ bất phương trình bậc nhất hai ẩn, đạo hàm), mô hình hàm số bậc hai (cổng parabol, quỹ đạo), hệ thức lượng đo khoảng cách, tổ hợp – xác suất có lập luận, cấp số và lãi kép trong tài chính, tích phân tính quãng đường/diện tích, xác suất có điều kiện.
+- Mức 6 (nâng cao, lớp 5): dùng các dạng bồi dưỡng học sinh giỏi như so sánh phân số bằng phần bù, tính nhanh dãy phân số (1/(n×(n+1)), 1/2 + 1/4 + …), cùng thêm vào tử và mẫu, quên/dời dấu phẩy, làm tròn ngược, chuyển kho cho bằng nhau, tuổi sau n năm, tỉ lệ bản đồ với diện tích, kéo dài đáy tam giác/hình thang, hình vuông nội tiếp hình tròn, phơi khô hạt tươi (lượng chất khô không đổi), pha loãng nước muối, tăng/giảm % liên tiếp, thả đá vào bể, sơn khối lập phương rồi cắt nhỏ, tàu qua cầu, vận tốc trung bình đi – về, chạy quanh hồ, làm chung công việc, đánh số trang sách, đếm hình.
 - Câu tự luận phải có đáp số cụ thể; nếu có nhiều ý thì answer_key ghi lần lượt kết quả các ý, cách nhau bằng "; ", và ghi rõ trong đề (ví dụ "(ghi: số gà; số chó)").
 - Tuyệt đối không chép nguyên văn bài trong sách; tự soạn bài mới cùng dạng với số liệu, bối cảnh mới.`;
 
@@ -87,7 +88,7 @@ function sanitize(p, want) {
   return out;
 }
 
-const DIFF = { 1: 'nhận biết (rất dễ)', 2: 'thông hiểu (dễ)', 3: 'vận dụng (trung bình)', 4: 'vận dụng (khá khó)', 5: 'vận dụng cao (khó, cần tư duy)' };
+const DIFF = { 1: 'nhận biết (rất dễ)', 2: 'thông hiểu (dễ)', 3: 'vận dụng (trung bình)', 4: 'vận dụng (khá khó)', 5: 'vận dụng cao (khó, cần tư duy)', 6: 'nâng cao – bồi dưỡng học sinh giỏi (cần suy luận sáng tạo, nhiều bước)' };
 
 /**
  * Ra đề theo danh sách "ô" đã lập sẵn (chủ đề, độ khó, hình thức).

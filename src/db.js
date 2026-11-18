@@ -81,6 +81,9 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 `);
 
+// nâng cấp CSDL cũ
+try { db.exec('ALTER TABLE assignments ADD COLUMN level INTEGER'); } catch { /* đã có cột */ }
+
 export const json = (s, fallback = null) => { try { return s == null ? fallback : JSON.parse(s); } catch { return fallback; } };
 
 /** Ngày hôm nay theo giờ Việt Nam (YYYY-MM-DD). */

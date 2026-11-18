@@ -94,9 +94,38 @@ export function topicStats(studentId) {
 
 // ---------------- lập đề ----------------
 
-/** Lập 10 "ô" đề: độ khó tăng dần, trộn chủ đề hiện tại + ôn tập (ưu tiên chủ đề yếu), có câu tư duy. */
-export function planSlots(student, prog, stats) {
-  const diffs = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+// Bậc thang tư duy: đề tự nâng/hạ độ khó theo kết quả gần đây (mức 6 = nâng cao, bồi dưỡng HSG).
+export const LEVELS = {
+  1: { name: 'Khởi động', diffs: [1, 1, 1, 2, 2, 3, 3, 4, 4, 5], note: 'Củng cố kiến thức nền, nhiều câu nhận biết – thông hiểu.' },
+  2: { name: 'Cơ bản', diffs: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5], note: 'Đủ các mức từ nhận biết đến vận dụng cao.' },
+  3: { name: 'Khá', diffs: [1, 2, 2, 3, 3, 4, 4, 5, 5, 6], note: 'Thêm câu nâng cao (mức 6) cần suy luận nhiều bước.' },
+  4: { name: 'Giỏi', diffs: [2, 2, 3, 3, 4, 4, 5, 5, 6, 6], note: 'Nhiều câu vận dụng cao và nâng cao, dạng bồi dưỡng học sinh giỏi.' },
+};
+
+/** Xác định bậc tư duy từ 40 câu gần nhất (câu trong đề chính, không tính bài luyện lại). */
+export function thinkingLevel(studentId) {
+  const rows = db.prepare(`SELECT p.status, p.difficulty FROM problems p JOIN assignments a ON a.id = p.assignment_id
+    WHERE a.student_id = ? AND p.depth = 0 AND p.status IN ('correct','wrong') ORDER BY p.id DESC LIMIT 40`).all(studentId);
+  const count = rows.length;
+  // đúng ở câu khó được tính nhiều điểm hơn
+  const w = (r) => 0.6 + 0.2 * r.difficulty;
+  const acc = count ? rows.reduce((s, r) => s + (r.status === 'correct' ? w(r) : 0), 0) / rows.reduce((s, r) => s + w(r), 0) : null;
+  let level = 2;
+  if (count >= 15) level = acc >= 0.88 ? 4 : acc >= 0.72 ? 3 : acc >= 0.45 ? 2 : 1;
+  return { level, ...LEVELS[level], acc, count };
+}
+
+/** Bậc dùng cho đề tiếp theo: tiến về bậc mục tiêu nhưng mỗi ngày chỉ lên/xuống tối đa 1 bậc. */
+export function nextLevel(studentId, beforeDate = '9999-12-31') {
+  const target = thinkingLevel(studentId);
+  const prev = db.prepare('SELECT level FROM assignments WHERE student_id = ? AND date < ? AND level IS NOT NULL ORDER BY date DESC LIMIT 1').get(studentId, beforeDate)?.level ?? 2;
+  const level = Math.max(1, Math.min(4, Math.max(prev - 1, Math.min(prev + 1, target.level))));
+  return { ...target, ...LEVELS[level], level, target: target.level, prev };
+}
+
+/** Lập 10 "ô" đề: độ khó tăng dần theo bậc tư duy, trộn chủ đề hiện tại + ôn tập (ưu tiên chủ đề yếu), có câu tư duy. */
+export function planSlots(student, prog, stats, level = 2) {
+  const diffs = LEVELS[level]?.diffs || LEVELS[2].diffs;
   const essayFrom = student.grade <= 2 ? 8 : student.grade <= 5 ? 7 : 6;
   const prev = prog.previous;
   const weak = stats.filter((s) => s.total >= 3 && s.rate < 0.7 && prev.some((t) => t.id === s.topic_id))
@@ -130,7 +159,8 @@ export async function createDailyAssignment(studentId, { topicId = null, date = 
 
   const prog = studentProgress(student, date, topicId);
   const stats = topicStats(studentId);
-  const slots = planSlots(student, prog, stats);
+  const lv = nextLevel(studentId, date).level;
+  const slots = planSlots(student, prog, stats, lv);
 
   let problems = null;
   let source = 'offline';
@@ -173,8 +203,8 @@ export async function createDailyAssignment(studentId, { topicId = null, date = 
   try {
     const again = db.prepare('SELECT id FROM assignments WHERE student_id = ? AND date = ?').get(studentId, date);
     if (again) { db.exec('ROLLBACK'); return getAssignment(again.id); }
-    const r = db.prepare('INSERT INTO assignments (student_id, date, week, topic_id, topic_name, source) VALUES (?, ?, ?, ?, ?, ?)')
-      .run(studentId, date, prog.week, prog.current.id, prog.current.name, source);
+    const r = db.prepare('INSERT INTO assignments (student_id, date, week, topic_id, topic_name, source, level) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(studentId, date, prog.week, prog.current.id, prog.current.name, source, lv);
     const aid = r.lastInsertRowid;
     problems.forEach((p, i) => saveProblem(aid, slots[i], p, { position: i + 1 }));
     db.exec('COMMIT');
@@ -421,7 +451,7 @@ export function progressData(studentId) {
   const prev7 = completed.slice(-14, -7);
   const avg = (arr) => (arr.length ? arr.reduce((s, d) => s + d.score, 0) / arr.length : null);
   return {
-    days, topics: topicStats(studentId), byDifficulty, byKind, streak,
+    days, topics: topicStats(studentId), byDifficulty, byKind, streak, level: nextLevel(studentId),
     summary: { completedDays: completed.length, avg7: avg(last7), avgPrev7: avg(prev7), avgAll: avg(completed) },
   };
 }

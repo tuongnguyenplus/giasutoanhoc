@@ -9,7 +9,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const code = () => { try { return localStorage.getItem('accessCode') || ''; } catch { return ''; } };
 const withCode = (url) => (code() ? `${url}${url.includes('?') ? '&' : '?'}code=${encodeURIComponent(code())}` : url);
 const fmtDate = (d) => (d ? d.split('-').reverse().join('/') : '');
-const DIFF = ['', 'Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng', 'Vận dụng cao'];
+const DIFF = ['', 'Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng', 'Vận dụng cao', 'Nâng cao'];
 
 async function api(path, opts = {}) {
   const headers = { ...(opts.body && !(opts.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}), ...(code() ? { 'x-access-code': code() } : {}) };
@@ -150,7 +150,9 @@ async function viewStudent(id) {
       <div class="kpi"><div class="v">${s.completedDays}</div><div class="l">ngày đã hoàn thành</div></div>
       <div class="kpi"><div class="v">${s.avg7 != null ? s.avg7.toFixed(1) : '–'}<span class="muted small">/10</span></div><div class="l">điểm TB 7 ngày gần nhất${trend != null ? ` · ${trend >= 0 ? '▲' : '▼'} ${Math.abs(trend).toFixed(1)}` : ''}</div></div>
       <div class="kpi"><div class="v">${prog.streak} 🔥</div><div class="l">ngày học liên tục</div></div>
+      <div class="kpi" title="${esc(prog.level.note)}"><div class="v">Bậc ${prog.level.level}<span class="muted small">/4</span></div><div class="l">tư duy: ${esc(prog.level.name)}${prog.level.count < 15 ? ' (cần thêm dữ liệu)' : prog.level.target > prog.level.level ? ' · ▲ đang lên' : prog.level.target < prog.level.level ? ' · ▼ đang xuống' : ''}</div></div>
     </div>
+    <p class="muted small">🧗 ${esc(prog.level.note)} Đề tự nâng bậc khi em làm đúng nhiều (nhất là câu khó) và hạ bậc khi em gặp khó khăn.</p>
     <div class="card"><b>Nhận xét:</b> ${esc(prog.comment)}</div>
     ${prog.days.length ? `
     <div class="card"><h3 style="margin-top:0">Điểm mỗi ngày (đúng ngay lần đầu)</h3><div class="chart-box"><canvas id="c-days" aria-label="Biểu đồ điểm theo ngày"></canvas></div></div>
@@ -296,7 +298,7 @@ function problemHtml(p, title) {
   const tags = [
     `<span class="tag"><b>${title}</b></span>`,
     `<span class="tag">${p.kind === 'mcq' ? 'Trắc nghiệm' : 'Tự luận'}</span>`,
-    `<span class="tag">Mức ${p.difficulty} · ${DIFF[p.difficulty]}</span>`,
+    `<span class="tag ${p.difficulty >= 6 ? 'lv6' : ''}">${p.difficulty >= 6 ? '⭐ ' : ''}Mức ${p.difficulty} · ${DIFF[p.difficulty]}</span>`,
     p.is_thinking ? '<span class="tag think">🧠 Tư duy</span>' : '',
     `<span class="tag">${esc(p.topic_name)}</span>`,
   ].join('');

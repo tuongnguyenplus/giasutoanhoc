@@ -6,33 +6,10 @@
 // Mỗi mẫu: { id, grades:[từ, đến], gens:[generator chủ đề], d:[độ khó từ, đến], think?, make() }
 // make() trả về { q, ans, tex, sol, method } (ans: số, hoặc chuỗi "a; b" khi nhiều kết quả).
 
-const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
-const lcm = (a, b) => (a * b) / gcd(a, b);
-const rd = (x, k = 2) => Math.round(x * 10 ** k) / 10 ** k;
-const C = (n, k) => { let x = 1; for (let i = 0; i < k; i++) x = (x * (n - i)) / (i + 1); return x; };
+import { R, pick, gcd, lcm, rd, C, n, t, u, parts, fr, ftex, fstr, NAME, two, solve } from './wp-helpers.js';
+import { GRADE5 } from './grade5.js';
 
-/** Số dạng văn bản Việt Nam: 23,8 · 12 500 */
-function n(x) {
-  if (typeof x !== 'number') return String(x);
-  const neg = x < 0;
-  const [i, f] = String(Math.abs(rd(x, 4))).split('.');
-  const ip = i.length > 4 ? i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : i;
-  return (neg ? '-' : '') + ip + (f ? ',' + f : '');
-}
-/** Số trong LaTeX */
-const t = (x) => n(x).replace(',', '{,}').replace(/ /g, '\\,');
-const u = (x, unit) => `${t(x)}\\text{ ${unit}}`;
-const parts = (...xs) => xs.map((x, i) => `\\text{${'abcd'[i]}) }${x}`).join(';\\ ');
-const fr = (a, b) => { const g = gcd(a, b); return [a / g, b / g]; };
-const ftex = ([a, b]) => (b === 1 ? `${a}` : `\\frac{${a}}{${b}}`);
-const fstr = ([a, b]) => (b === 1 ? `${a}` : `${a}/${b}`);
-const NAME = ['An', 'Bình', 'Chi', 'Dũng', 'Hà', 'Khoa', 'Lan', 'Minh', 'Nam', 'Ngọc', 'Phong', 'Quân', 'Trang', 'Vy', 'Hùng', 'Mai'];
-const two = () => { const a = pick(NAME); return [a, pick(NAME.filter((x) => x !== a))]; };
-const solve = (...lines) => ['Bài giải', ...lines].join('\n');
-
-export const WORD_PROBLEMS = [
+const BASE_PROBLEMS = [
   // ===================== LỚP 1 – 3 =====================
   { id: 'nam_nu', grades: [1, 3], gens: ['add_sub', 'word_basic', 'compare_numbers'], d: [3, 5], make() {
     const tot = R(25, 40), girl = R(10, tot - 10), boy = tot - girl;
@@ -664,6 +641,9 @@ export const WORD_PROBLEMS = [
   } },
 ];
 
+// Bộ lớp 5 chọn theo mã chủ đề (topics); bộ chung chọn theo generator (gens) và khoảng lớp (grades).
+export const WORD_PROBLEMS = [...BASE_PROBLEMS, ...GRADE5.map((w) => ({ grades: [5, 5], gens: [], ...w }))];
+
 /** Sinh lại đúng một mẫu (dùng cho bài luyện lại cùng dạng). */
 export function makeWordProblem(wid, grade, d) {
   const w = WORD_PROBLEMS.find((x) => x.id === wid);
@@ -679,22 +659,29 @@ export function makeWordProblem(wid, grade, d) {
 }
 
 /**
- * Chọn một mẫu bài có lời văn phù hợp với chủ đề, lớp và độ khó. Trả về null nếu không có.
- * Ưu tiên mẫu "tư duy" cho câu tư duy.
+ * Chọn một mẫu bài có lời văn phù hợp với chủ đề, lớp, độ khó và hình thức (mcq/essay).
+ * Ưu tiên mẫu đúng mức độ; nếu không có thì lấy mẫu có mức gần nhất. Ưu tiên mẫu "tư duy" cho câu tư duy.
  */
-export function pickWordProblem(topic, grade, d, thinking = false, avoid = new Set()) {
-  const gen = topic.gen;
-  const fits = WORD_PROBLEMS.filter((w) => w.gens.includes(gen) && grade >= w.grades[0] && grade <= w.grades[1]);
+export function pickWordProblem(topic, grade, d, thinking = false, avoid = new Set(), kind = 'essay') {
+  const review = /^Ôn (tập cuối|thi)/.test(topic.name || ''); // chủ đề ôn tập cuối năm: dùng mọi dạng của lớp
+  const fits = WORD_PROBLEMS.filter((w) => {
+    const okTopic = w.topics
+      ? w.topics.includes(topic.id) || (review && w.topics.some((x) => x.startsWith(grade + '-')))
+      : w.gens.includes(topic.gen) && grade >= w.grades[0] && grade <= w.grades[1];
+    const okKind = kind === 'mcq' ? w.mcq === true : w.essay !== false;
+    return okTopic && okKind;
+  });
   if (!fits.length) return null;
-  let pool = fits.filter((w) => d >= w.d[0] && d <= w.d[1]);
-  if (!pool.length) pool = fits.filter((w) => d >= w.d[0] - 1); // nới độ khó một bậc
-  if (!pool.length) return null;
+  const dist = (w) => (d < w.d[0] ? w.d[0] - d : d > w.d[1] ? d - w.d[1] : 0);
+  const best = Math.min(...fits.map(dist));
+  if (best > 1) return null;
+  let pool = fits.filter((w) => dist(w) === best);
   if (pool.some((w) => !avoid.has(w.id))) pool = pool.filter((w) => !avoid.has(w.id));
   if (thinking && pool.some((w) => w.think)) pool = pool.filter((w) => w.think);
   for (let i = 0; i < 12; i++) {
     const w = pick(pool);
     try {
-      const out = w.make(d, grade);
+      const out = w.make(Math.max(w.d[0], Math.min(w.d[1], d)), grade);
       if (out && out.q && out.ans !== undefined && !/NaN|undefined|Infinity/.test(out.q + out.ans + out.sol)) return { ...out, wid: w.id };
     } catch { /* thử mẫu khác */ }
   }

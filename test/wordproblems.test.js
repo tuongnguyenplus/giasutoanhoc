@@ -25,11 +25,11 @@ test('mọi mẫu bài có lời văn sinh được, số liệu hợp lệ, l�
       assert.ok(!/NaN|undefined|Infinity|\[object/.test(all), `${w.id}: ${all}`);
       assert.ok(checkAnswer(String(out.ans), String(out.ans)), `${w.id}: đáp án tự khớp ${out.ans}`);
       for (const part of String(out.ans).split(/;\s*/)) {
-        if (part.includes(':') || /[a-zà-ỹ]/i.test(part)) continue;
+        if (part.includes(':') || /[a-zà-ỹ]/i.test(part) || !/\d/.test(part)) continue;
         const want = part.includes('/') ? part : fmt(Number(part));
         assert.ok(out.sol.includes(want), `${w.id}: lời giải không chứa đáp số ${want}\n${out.q}\n${out.sol}`);
       }
-      if (w.grades[0] <= 5) assert.ok(String(out.ans).split(/;\s*/).every((x) => x.includes(':') || /[a-zà-ỹ]/i.test(x) || eval(x) >= 0), `${w.id}: tiểu học không có số âm: ${out.ans}`);
+      if (w.grades[0] <= 5) assert.ok(String(out.ans).split(/;\s*/).every((x) => x.includes(':') || /[a-zà-ỹ]/i.test(x) || !/\d/.test(x) || eval(x) >= 0), `${w.id}: tiểu học không có số âm: ${out.ans}`);
     }
     assert.ok(ok >= 100, `${w.id}: chỉ sinh được ${ok}/300 lần`);
   }
