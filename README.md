@@ -20,7 +20,27 @@
 - **Có AI (Claude)**: đặt `ANTHROPIC_API_KEY`. AI soạn đề đa dạng, có câu tư duy theo tình huống thực tế. AI đọc **ảnh chụp bài làm** để chấm cả cách làm lẫn kết quả, chỉ ra bước sai, rồi ra 3 bài tương tự và viết nhận xét.
 - **Offline** (không có khóa, hoặc khi AI lỗi): đề lấy từ bộ sinh bài có sẵn, phủ mọi chủ đề lớp 1–12 (`src/generators.js`). Bài tự luận được chấm theo **đáp số cuối** em nhập; ảnh vẫn được lưu để phụ huynh xem. Đề offline lặp dạng nhiều hơn đề do AI soạn.
 
-## Chạy thử
+## Cài trên máy của con (miễn phí, không cần máy chủ)
+
+Ứng dụng chạy ngay trên máy tính của con và được mở bằng trình duyệt tại **http://localhost:3000**.
+
+1. **Tải ứng dụng về máy:** trên GitHub, chọn nhánh chứa mã, bấm **Code → Download ZIP**, rồi giải nén vào một thư mục cố định, ví dụ `Tài liệu\GiaSuToan`. Đừng để trong thư mục Tải về vì dễ bị xoá nhầm.
+2. **Mở ứng dụng:**
+   - **Windows:** bấm đúp `Mo-Gia-su-Toan-Windows.bat`.
+     - Lần đầu, nếu máy chưa có Node.js, file sẽ tự cài (hoặc mở trang tải về). Cài xong, **bấm đúp lại** file này.
+     - Nếu Windows hiện cảnh báo *"Windows protected your PC"*, chọn **More info → Run anyway**.
+   - **macOS:** chuột phải vào `Mo-Gia-su-Toan-Mac.command` rồi chọn **Open**.
+   - Lần đầu ứng dụng cài thư viện mất 1–2 phút (cần mạng). Sau đó trình duyệt tự mở trang học.
+3. **Khi con học:** thu nhỏ cửa sổ đen, **không đóng nó**. Nên tạo dấu trang (bookmark) `http://localhost:3000` trên trình duyệt.
+4. **Tự chạy khi bật máy (Windows, nên làm):** bấm đúp `Tu-khoi-dong-cung-Windows.bat` một lần. Từ đó ứng dụng tự chạy ngầm mỗi khi bật máy, nên báo cáo cho phụ huynh được gửi đúng giờ. Nếu máy tắt vào giờ gửi, báo cáo sẽ được gửi ngay khi máy bật lại trong cùng ngày.
+
+**Gửi email báo cáo (miễn phí):** sao chép `.env.example` thành `.env` và mở bằng Notepad. Điền `SMTP_USER` là Gmail của bạn, `SMTP_PASS` là *Mật khẩu ứng dụng* của Gmail (tạo tại myaccount.google.com → Bảo mật → Mật khẩu ứng dụng), và `SMTP_FROM`. Sau đó mở lại ứng dụng.
+
+**AI (tuỳ chọn, có tính phí theo lượt dùng):** không có khóa `ANTHROPIC_API_KEY` thì ứng dụng chạy chế độ offline và hoàn toàn miễn phí. Có khóa thì đề phong phú hơn và chấm được ảnh bài làm, nhưng tính tiền theo lượng sử dụng. Có thể đặt `CLAUDE_MODEL` sang mô hình rẻ hơn để giảm chi phí.
+
+**Dữ liệu** (kết quả học, ảnh bài làm) nằm trong thư mục `data` cạnh ứng dụng. Thỉnh thoảng hãy sao lưu thư mục này. Khi cập nhật phiên bản mới, giữ lại thư mục `data` và file `.env`.
+
+## Chạy thử (dành cho lập trình viên)
 
 Cần Node.js ≥ 22.13 (dùng SQLite có sẵn của Node).
 

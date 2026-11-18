@@ -97,8 +97,16 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = Number(process.env.PORT || 3000);
-app.listen(PORT, () => {
+const server = app.listen(PORT, (err) => {
+  if (err) return; // Express 5 gọi callback cả khi lỗi; xử lý ở server.on("error")
   console.log(`Gia sư Toán đang chạy: http://localhost:${PORT}`);
   console.log(`AI (Claude): ${aiEnabled() ? 'BẬT' : 'TẮT – dùng bộ sinh bài offline'} · Email: ${channelsConfigured().email ? 'có' : 'chưa'} · Zalo: ${channelsConfigured().zalo ? 'có' : 'chưa'}`);
   startScheduler();
+});
+server.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    console.log(`Gia sư Toán đã đang chạy sẵn. Mở trình duyệt tại http://localhost:${PORT}`);
+    process.exit(0);
+  }
+  throw e;
 });
