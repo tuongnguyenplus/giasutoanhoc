@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import os from 'node:os';
 import { UPLOAD_DIR, todayVN, db } from './db.js';
 import { CURRICULUM, CURRICULUM_SOURCE } from './curriculum.js';
 import * as T from './tutor.js';
@@ -38,8 +39,17 @@ const upload = multer({
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
 const need = (x, msg = 'Không tìm thấy') => { if (!x) throw T.httpError(404, msg); return x; };
 
+/** Địa chỉ trong mạng nội bộ (Wi‑Fi) để mở ứng dụng từ iPad / điện thoại. */
+function lanUrls() {
+  const out = [];
+  for (const list of Object.values(os.networkInterfaces())) {
+    for (const a of list || []) if (a.family === 'IPv4' && !a.internal && !a.address.startsWith('169.254.')) out.push(`http://${a.address}:${PORT}`);
+  }
+  return out;
+}
+
 app.get('/api/status', (req, res) => res.json({
-  ai: aiEnabled(), channels: channelsConfigured(), today: todayVN(), curriculum: CURRICULUM_SOURCE, needCode: Boolean(ACCESS_CODE),
+  ai: aiEnabled(), channels: channelsConfigured(), today: todayVN(), curriculum: CURRICULUM_SOURCE, needCode: Boolean(ACCESS_CODE), lanUrls: lanUrls(),
 }));
 
 app.get('/api/curriculum', (req, res) => res.json(Object.fromEntries(Object.entries(CURRICULUM).map(([g, ts]) => [g, ts.map(({ id, week, name }) => ({ id, week, name }))]))));
@@ -100,6 +110,8 @@ const PORT = Number(process.env.PORT || 3000);
 const server = app.listen(PORT, (err) => {
   if (err) return; // Express 5 gọi callback cả khi lỗi; xử lý ở server.on("error")
   console.log(`Gia sư Toán đang chạy: http://localhost:${PORT}`);
+  const lan = lanUrls();
+  if (lan.length) console.log(`Mở trên iPad / điện thoại (cùng mạng Wi‑Fi): ${lan.join('  hoặc  ')}`);
   console.log(`AI (Claude): ${aiEnabled() ? 'BẬT' : 'TẮT – dùng bộ sinh bài offline'} · Email: ${channelsConfigured().email ? 'có' : 'chưa'} · Zalo: ${channelsConfigured().zalo ? 'có' : 'chưa'}`);
   startScheduler();
 });

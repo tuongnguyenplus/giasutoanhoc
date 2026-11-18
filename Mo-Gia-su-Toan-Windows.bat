@@ -21,6 +21,8 @@ if /i not "%1"=="--an" start "" cmd /c "timeout /t 3 /nobreak >nul & start http:
 echo.
 echo  Gia su Toan dang chay tai: http://localhost:3000
 echo  Thu nho cua so nay xuong, KHONG dong no khi con dang hoc.
+echo  Dung tren iPad: xem dong "Mo tren iPad" ben duoi. Neu Windows hoi tuong lua,
+echo  hay tich "Private networks" roi bam "Allow access".
 echo.
 node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/server.js
 pause

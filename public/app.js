@@ -53,15 +53,27 @@ function cssVar(name) { return getComputedStyle(document.documentElement).getPro
 
 /** Nén ảnh trước khi tải lên (cạnh dài tối đa 1600px, JPEG). */
 async function compress(file) {
-  if (!file.type.startsWith('image/')) return file;
+  // Ảnh từ camera iPad/iPhone có thể rất lớn hoặc ở định dạng HEIC → luôn vẽ lại thành JPEG ≤ 1600px.
+  const load = async () => {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch { /* Safari cũ */ }
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.decoding = 'async';
+      await new Promise((ok, fail) => { img.onload = ok; img.onerror = fail; img.src = url; });
+      return img; // Safari tự xoay ảnh theo EXIF khi vẽ <img>
+    } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  };
   try {
-    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const src = await load();
+    const w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+    const scale = Math.min(1, 1600 / Math.max(w, h));
     const c = document.createElement('canvas');
-    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
-    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
     const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.85));
-    return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+    if (!blob) throw new Error('toBlob');
+    return new File([blob], (file.name || 'anh').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
   } catch { return file; }
 }
 
@@ -102,6 +114,7 @@ async function viewHome() {
     <h1>Xin chào! 👋</h1>
     <p class="muted">Mỗi ngày 10 câu Toán theo đúng tiến độ sách giáo khoa <b>${esc(STATUS?.curriculum?.name || '')}</b>, từ dễ đến khó, có câu tư duy. Làm sai sẽ được giảng lại và luyện thêm cho tới khi đúng hết.</p>
     ${STATUS && !STATUS.ai ? `<div class="banner warn small">Chế độ <b>offline</b>: đề được sinh tự động, bài tự luận chấm theo đáp số cuối. Cấu hình <code>ANTHROPIC_API_KEY</code> để AI ra đề phong phú và chấm bài qua ảnh chụp.</div>` : ''}
+    ${STATUS?.lanUrls?.length && /^(localhost|127\.)/.test(location.hostname) ? `<div class="banner small">📱 <b>Dùng trên iPad / điện thoại:</b> kết nối cùng mạng Wi‑Fi với máy tính này, mở Safari và gõ địa chỉ <b>${STATUS.lanUrls.map(esc).join('</b> hoặc <b>')}</b>. Sau đó bấm nút Chia sẻ → <i>Thêm vào MH chính</i> để dùng như một ứng dụng.</div>` : ''}
     <h2>Chọn học sinh</h2>
     <div class="grid">
       ${students.map((s) => `<a class="card student-card" href="#/student/${s.id}"><div class="row"><div class="avatar">${esc(s.name.trim()[0] || '?').toUpperCase()}</div><div><b>${esc(s.name)}</b><div class="muted small">Lớp ${s.grade}</div></div></div></a>`).join('') || '<p class="muted">Chưa có học sinh nào.</p>'}

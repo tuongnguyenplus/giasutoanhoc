@@ -46,6 +46,22 @@
 
 **Dữ liệu** (kết quả học, ảnh bài làm) nằm trong thư mục `data` cạnh ứng dụng. Thỉnh thoảng hãy sao lưu thư mục này. Khi cập nhật phiên bản mới, giữ lại thư mục `data` và file `.env`.
 
+## Dùng trên iPad (miễn phí)
+
+iPad không chạy được phần máy chủ, nên máy tính trong nhà sẽ chạy ứng dụng và iPad mở bằng Safari qua Wi‑Fi.
+
+1. Trên **máy tính** (Windows hoặc Mac), mở ứng dụng như hướng dẫn ở trên. Cửa sổ đen sẽ hiện dòng:
+   `Mở trên iPad / điện thoại (cùng mạng Wi‑Fi): http://192.168.1.25:3000`. Địa chỉ này cũng hiện trên trang chủ của ứng dụng khi mở trên máy tính.
+   - Lần đầu, **Windows** có thể hỏi về tường lửa: tích *Private networks* rồi bấm **Allow access**. **Mac** hỏi có cho phép kết nối đến không thì bấm **Allow**.
+2. Trên **iPad**: kết nối **cùng mạng Wi‑Fi**, mở **Safari** và gõ đúng địa chỉ đó.
+3. Bấm nút **Chia sẻ** (ô vuông có mũi tên) → **Thêm vào MH chính** (Add to Home Screen). Từ đó ứng dụng có biểu tượng riêng và mở toàn màn hình như một app.
+4. Câu tự luận: bấm chọn ảnh → **Chụp ảnh** bằng camera iPad. Ảnh tự được nén nhỏ trước khi gửi.
+
+Lưu ý:
+- Máy tính phải **đang bật và đang chạy ứng dụng** khi con học trên iPad. Nên bật chế độ tự khởi động (`Tu-khoi-dong-cung-Windows.bat`) và cài máy tính không tự ngủ khi cắm điện.
+- Nếu đổi mạng hoặc khởi động lại modem, địa chỉ có thể thay đổi; hãy xem lại dòng địa chỉ trong cửa sổ đen. Muốn địa chỉ cố định thì đặt "IP tĩnh" (DHCP reservation) cho máy tính trong trang quản lý modem.
+- iPad chỉ dùng được khi ở nhà, tức là cùng mạng Wi‑Fi với máy tính.
+
 ## Chạy thử (dành cho lập trình viên)
 
 Cần Node.js ≥ 22.13 (dùng SQLite có sẵn của Node).

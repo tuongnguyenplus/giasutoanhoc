@@ -51,10 +51,13 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
 a { color: var(--primary); }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; padding-top: max(12px, env(safe-area-inset-top)); }
 .brand { white-space: nowrap; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--text); }
 .pill { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60vw; }
-main { max-width: 920px; margin: 0 auto; padding: 16px; }
+main { max-width: 920px; margin: 0 auto; padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+/* chạm trên iPad: tránh phóng to khi bấm vào ô nhập, bỏ viền xám khi chạm */
+input, select, textarea { font-size: 16px; }
+button, a, .choice { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 h1 { font-size: 24px; margin: 8px 0 4px; }
 h2 { font-size: 19px; margin: 24px 0 8px; }
 h3 { font-size: 16px; margin: 16px 0 6px; }
