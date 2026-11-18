@@ -146,13 +146,24 @@ export async function createDailyAssignment(studentId, { topicId = null, date = 
   }
   if (!problems) {
     const seen = new Set();
+    const usedW = new Set();
     problems = slots.map((s) => {
       let p;
-      for (let i = 0; i < 8; i++) { // tránh câu trùng nhau trong cùng một đề
-        p = generateOffline(s.topic, s.difficulty, s.kind, { thinking: s.is_thinking });
-        if (!seen.has(p.question)) break;
+      for (let i = 0; i < 8; i++) { // tránh câu trùng nhau / trùng mẫu trong cùng một đề
+        p = generateOffline(s.topic, s.difficulty, s.kind, { thinking: s.is_thinking, avoid: usedW });
+        if (!seen.has(p.question) && !(p.wid && usedW.has(p.wid))) break;
+        if (i === 7 && p.wid && usedW.has(p.wid)) p = { ...p, wid: null }; // đánh dấu để tìm chủ đề khác
+      }
+      // chủ đề hiện tại đã hết mẫu lời văn → lấy bài lời văn của một chủ đề đã học (ôn tập xen kẽ)
+      if (s.kind === 'essay' && s.difficulty >= 3 && (!p.wid || seen.has(p.question)) && prog.previous.length) {
+        const cands = [...prog.previous].sort(() => Math.random() - 0.5);
+        for (const t of cands) {
+          const q = generateOffline(t, s.difficulty, 'essay', { thinking: s.is_thinking, avoid: usedW });
+          if (q.wid && !usedW.has(q.wid)) { p = q; Object.assign(s, { topic: t, topic_id: t.id, topic_name: t.name }); break; }
+        }
       }
       seen.add(p.question);
+      if (p.wid) usedW.add(p.wid);
       return p;
     });
   }
@@ -324,7 +335,8 @@ async function remediate(p, studentAnswer) {
       console.error('[AI] Sinh bài tương tự thất bại, dùng offline:', e.message);
     }
   }
-  made ||= diffs.map((d) => generateOffline(topic, d, p.kind));
+  // cùng dạng: nếu bài gốc lấy từ mẫu lời văn thì sinh lại đúng mẫu đó với số liệu mới
+  made ||= diffs.map((d) => generateOffline(topic, Math.max(d, gen.wid ? 3 : 1), p.kind, { wid: gen.wid || null }));
   const ids = made.map((x, i) => saveProblem(p.assignment_id, slot(diffs[i]), x, { parentId: p.id, depth, position: i + 1 }));
   return ids.map((id) => hydrateProblem(db.prepare('SELECT * FROM problems WHERE id = ?').get(id), { reveal: false }));
 }

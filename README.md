@@ -18,7 +18,7 @@
 ### Hai chế độ
 
 - **Có AI (Claude)**: đặt `ANTHROPIC_API_KEY`. AI soạn đề đa dạng, có câu tư duy theo tình huống thực tế. AI đọc **ảnh chụp bài làm** để chấm cả cách làm lẫn kết quả, chỉ ra bước sai, rồi ra 3 bài tương tự và viết nhận xét.
-- **Offline** (không có khóa, hoặc khi AI lỗi): đề lấy từ bộ sinh bài có sẵn, phủ mọi chủ đề lớp 1–12 (`src/generators.js`). Bài tự luận được chấm theo **đáp số cuối** em nhập; ảnh vẫn được lưu để phụ huynh xem. Đề offline lặp dạng nhiều hơn đề do AI soạn.
+- **Offline** (không có khóa, hoặc khi AI lỗi): đề lấy từ bộ sinh bài có sẵn, phủ mọi chủ đề lớp 1–12 (`src/generators.js`). Câu **tự luận** lấy từ ngân hàng **84 mẫu bài có lời văn nhiều bước** (`src/wordproblems.js`), soạn theo các dạng điển hình trong SGK, sách bài tập, vở bài tập và đề kiểm tra: rút về đơn vị, tổng – hiệu, tổng – tỉ, giả thiết tạm, tính ngược, tỉ số phần trăm, chuyển động, lập phương trình hoặc hệ phương trình, bài toán thực tế THPT… Số liệu được sinh ngẫu nhiên nên đề không lặp. Lời giải trình bày theo kiểu "Bài giải … Đáp số". Bài tự luận được chấm theo **đáp số cuối** em nhập; ảnh vẫn được lưu để phụ huynh xem. Đề offline lặp dạng nhiều hơn đề do AI soạn.
 
 ## Cài trên máy của con (miễn phí, không cần máy chủ)
 
@@ -77,6 +77,7 @@ npm test
 src/
   curriculum.js  Phân phối chương trình lớp 1–12 (SGK Kết nối tri thức) và cách tính tuần học
   generators.js  Bộ sinh bài offline (~70 dạng) kèm lời giải, phương pháp và phương án nhiễu
+  wordproblems.js Ngân hàng mẫu bài tự luận có lời văn (84 mẫu, lớp 1–12)
   answer.js      So khớp đáp số (dấu phẩy/chấm, phân số, thứ tự nghiệm…)
   ai.js          Gọi Claude: ra đề, chấm ảnh tự luận, bài tương tự, nhận xét
   tutor.js       Lập đề hằng ngày, chấm bài, vòng luyện lại, thống kê tiến bộ

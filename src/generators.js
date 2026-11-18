@@ -823,6 +823,8 @@ export const GENERATORS = {
   },
 };
 
+import { pickWordProblem, makeWordProblem } from './wordproblems.js';
+
 // ---------- đóng gói thành bài tập ----------
 
 /** Định dạng đáp án máy → LaTeX hiển thị. */
@@ -894,7 +896,7 @@ function stringDistractors(ans, n) {
  * Sinh một bài tập hoàn chỉnh từ chủ đề.
  * @returns {{question, kind, choices, correct_index, final_answer, answer_key, solution, method, choice_explanations, gen}}
  */
-export function generateOffline(topic, difficulty, kind, { thinking = false } = {}) {
+export function generateOffline(topic, difficulty, kind, { thinking = false, avoid = new Set(), wid = null } = {}) {
   const d = Math.max(1, Math.min(5, difficulty));
   const fn = GENERATORS[topic.gen] || GENERATORS.add_sub;
   let g;
@@ -902,6 +904,12 @@ export function generateOffline(topic, difficulty, kind, { thinking = false } = 
     try { g = fn(topic.p || {}, d); if (g && g.q && g.ans !== undefined && !Number.isNaN(g.ans)) break; } catch { g = null; }
   }
   if (!g) g = GENERATORS.add_sub({ max: 100 }, d);
+  // Tự luận: ưu tiên bài có lời văn nhiều bước từ ngân hàng mẫu (theo dạng bài SGK/SBT)
+  if (kind === 'essay' && d >= 3) {
+    const grade = Number(String(topic.id || '').split('-')[0]) || 0;
+    const w = !grade ? null : wid ? makeWordProblem(wid, grade, d) : pickWordProblem(topic, grade, d, thinking, avoid);
+    if (w) g = w;
+  }
   const tex = g.tex || toTex(g.ans);
   // đáp án nhiễu dùng cùng "khuôn" với đáp án đúng (giữ đơn vị, "x = ...", ...)
   const shape = typeof g.ans === 'number' && tex.includes(vn(g.ans))
@@ -915,11 +923,12 @@ export function generateOffline(topic, difficulty, kind, { thinking = false } = 
     answer_key: String(g.ans),
     solution: plainText(g.sol),
     method: plainText(g.method),
-    gen: { key: topic.gen, p: topic.p || {} },
+    gen: { key: topic.gen, p: topic.p || {}, ...(g.wid ? { wid: g.wid } : {}) },
+    wid: g.wid || null,
   };
   if (kind === 'essay') {
     return { ...base, kind: 'essay', choices: [], correct_index: -1, choice_explanations: [],
-      question: base.question + (thinking ? '\n\n*Trình bày lời giải đầy đủ, giải thích vì sao em chọn cách làm đó.*' : '\n\n*Trình bày lời giải vào vở.*') };
+      question: base.question + (String(g.ans).includes(';') ? '\n\n*Ô đáp số: ghi lần lượt các kết quả, cách nhau bởi dấu chấm phẩy (;).*' : '') + (thinking ? '\n\n*Trình bày lời giải đầy đủ, giải thích vì sao em chọn cách làm đó.*' : '\n\n*Trình bày lời giải vào vở.*') };
   }
   const seen = new Set([tex]);
   const opts = [];
